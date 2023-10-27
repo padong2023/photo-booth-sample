@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>웹캠 좌우 반전</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap"
+      rel="stylesheet"
+    />
+    <script
+      async
+      src="https://docs.opencv.org/3.4.0/opencv.js"
+      onload="onOpenCvReady();"
+      type="text/javascript"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+      integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    
+  </head>
+  <body>
+    <div class="container">
+      <h1 id="title">Memorism</h1>
+      <div id="description-section" class="container">
+        <button id="startButton">
+          <img id="startIcon" src="image/camera-icon.png" alt="startPhoto" />
+        </button>
+      </div>
+      <!-- 사진 촬영 섹션 -->
+      <div id="photo-capture-section" class="container visibility-hidden">
+        <span id="remainingCount">남은 사진 촬영 횟수: 8회</span>
+        <span id="countdownTimer"></span>
+        <div>
+          <video id="videoElement" width="780" height="600" autoplay></video>
+        </div>
+        <div>
+          <button id="captureButton"></button>
+        </div>
+      </div>
+      <!-- 사진 선택 섹션 -->
+      <div id="photo-choice-section" class="container center visibility-hidden">
+        <!-- 촬영한 사진 목록 -->
+        <ul id="photoList"></ul>
+        <ul id="selectPhotoList">
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+        </ul>
+        <button id="selectCompleteButton" class="check-btn" disabled>
+          <img src="image/check-icon.png" alt="select complete button" />
+        </button>
+      </div>
+      <!-- 출력될 파일 섹션 -->
+      <div id="photo-output-section" class="container center visibility-hidden">
+        <!-- 프레임 선택하는 섹션 -->
+        <div id="select-frame-section" class="container"></div>
+        <!-- 다운받을 섹션 -->
+        <div id="memorism-photo">
+          <div class="frame">
+            <div class="frame-hole hole1"></div>
+            <div class="frame-hole hole2"></div>
+            <div class="frame-hole hole3"></div>
+            <div class="frame-hole hole4"></div>
+            <img id="frame-img1" class="frame-img" src="frame/memorism-only-black.png" alt="Frame Image" />
+          </div>
+          <div class="frame">
+            <div class="frame-hole hole1"></div>
+            <div class="frame-hole hole2"></div>
+            <div class="frame-hole hole3"></div>
+            <div class="frame-hole hole4"></div>
+            <img id="frame-img2" class="frame-img" src="frame/memorism-only-black.png" alt="Frame Image" />
+          </div>
+        </div>
+
+        <!-- 다운로드 버튼 -->
+        <button id="downloadButton" class="check-btn">
+          <img src="image/check-icon.png" alt="photo download button" />
+        </button>
+      </div>
+    </div>
+  </body>
+</html>
