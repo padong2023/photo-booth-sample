@@ -36,13 +36,66 @@ const descriptionSectionEl = document.getElementById(
     {
       imgSrc : "frame/잔망루피프레임.png",
       name : "잔망루피"
+    },
+    //추가된 frame들 - 20231027
+    {
+      imgSrc : "frame/banzzack.png",
+      name : "banzzack"
+    },
+    {
+      imgSrc : "frame/Frame 지영.png",
+      name : "Frame 지영"
+    },
+    {
+      imgSrc : "frame/HANWHA.png",
+      name : "HANWHA"
+    },
+    {
+      imgSrc : "frame/NONGDAMGOM.png",
+      name : "NONGDAMGOM"
+    },
+    {
+      imgSrc : "frame/Pochacco.png",
+      name : "Pochacco"
+    },
+    {
+      imgSrc : "frame/TUXEDOSAM.png",
+      name : "TUXEDOSAM"
+    },
+    {
+      imgSrc : "frame/이브이.png",
+      name : "이브이"
+    },
+    {
+      imgSrc : "frame/인생네컷 프레임 정키네컷.png",
+      name : "인생네컷 프레임 정키네컷"
+    },
+    {
+      imgSrc : "frame/치이카와 인생네컷2.png",
+      name : "치이카와2"
+    },
+    {
+      imgSrc : "frame/치이카와 인생네컷3.png",
+      name : "치이카와3"
+    },
+    {
+      imgSrc : "frame/치이카와 인생네컷4.png",
+      name : "치이카와4"
+    },
+    {
+      imgSrc : "frame/펭귄.png",
+      name : "치이카와5"
+    },
+    {
+      imgSrc : "frame/shinseong_comon.png",
+      name : "신성_컴온"
     }
   ];
 
   const photoArr = []; // 촬영한 이미지 배열
   const selectedPhotoArr = []; // 선택된 이미지 배열
 
-  const maxCount = 9; // 최대 촬영 횟수
+  const maxCount = 5; // 최대 촬영 횟수
   let remainingCount = maxCount; // 현재 남은 촬영 횟수
 
   const countdownDuration = 10; // 카운트다운 기간 (초)
