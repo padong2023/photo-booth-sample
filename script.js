@@ -52,7 +52,7 @@ const descriptionSectionEl = document.getElementById(
     },
     {
       imgSrc : "frame/NONGDAMGOM.png",
-      name : "NONGDAMGOM"
+      name : "농담곰"
     },
     {
       imgSrc : "frame/Pochacco.png",
@@ -68,7 +68,7 @@ const descriptionSectionEl = document.getElementById(
     },
     {
       imgSrc : "frame/인생네컷 프레임 정키네컷.png",
-      name : "인생네컷 프레임 정키네컷"
+      name : "정키네컷"
     },
     {
       imgSrc : "frame/치이카와 인생네컷2.png",
