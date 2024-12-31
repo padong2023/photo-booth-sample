@@ -1,371 +1,348 @@
-const descriptionSectionEl = document.getElementById(
-    "description-section"
-  );
-  const startButtonEl = document.getElementById("startButton");
-  const downloadButtonEl = document.getElementById("downloadButton");
+// DOM 요소
+const descriptionSectionEl = document.getElementById("description-section");
+const startButtonEl = document.getElementById("startButton");
+const downloadButtonEl = document.getElementById("downloadButton");
+const videoElement = document.getElementById("videoElement");
+const photoCaptureSectionEl = document.getElementById("photo-capture-section");
+const photoChoiceSectionEl = document.getElementById("photo-choice-section");
+const photoOutputSectionEl = document.getElementById("photo-output-section");
+const captureButton = document.getElementById("captureButton");
+const photoList = document.getElementById("photoList");
+const selectPhotoList = document.getElementById("selectPhotoList");
+const remainingCountElement = document.getElementById("remainingCount");
+const countdownTimer = document.getElementById("countdownTimer");
+const selectCompleteButtonEl = document.getElementById("selectCompleteButton");
+const frameHoles = document.querySelectorAll(".frame-hole");
 
-  const videoElement = document.getElementById("videoElement");
-  const photoCaptureSectionEl = document.getElementById(
-    "photo-capture-section"
-  );
-  const photoChoiceSectionEl = document.getElementById(
-    "photo-choice-section"
-  );
-  const photoOutputSectionEl = document.getElementById(
-    "photo-output-section"
-  );
-  const captureButton = document.getElementById("captureButton");
-  const photoList = document.getElementById("photoList");
-  const selectPhotoList = document.getElementById("selectPhotoList");
-  const remainingCountElement = document.getElementById("remainingCount");
-  const countdownTimer = document.getElementById("countdownTimer");
-  const selectCompleteButtonEl = document.getElementById(
-    "selectCompleteButton"
-  );
+// 프레임 배열
+const frameArr = [
+  {
+    imgSrc: "frame/졸업네컷1.png",
+    name: "졸업네컷1"
+  },
+  {
+    imgSrc: "frame/졸업네컷2.png",
+    name: "졸업네컷2"
+  }
+];
 
-  const frameHoles = document.querySelectorAll(".frame-hole");
-  const frameArr = [
-    {
-      imgSrc : "frame/치이카와프레임.png",
-      name : "모몽가"
-    },
-    {
-      imgSrc : "frame/치이카와프레임2.png",
-      name : "치이카와"
-    },
-    {
-      imgSrc : "frame/잔망루피프레임.png",
-      name : "잔망루피"
-    },
-    //추가된 frame들 - 20231027
-    {
-      imgSrc : "frame/banzzack.png",
-      name : "banzzack"
-    },
-    {
-      imgSrc : "frame/Frame 지영.png",
-      name : "Frame 지영"
-    },
-    {
-      imgSrc : "frame/HANWHA.png",
-      name : "HANWHA"
-    },
-    {
-      imgSrc : "frame/NONGDAMGOM.png",
-      name : "농담곰"
-    },
-    {
-      imgSrc : "frame/Pochacco.png",
-      name : "Pochacco"
-    },
-    {
-      imgSrc : "frame/TUXEDOSAM.png",
-      name : "TUXEDOSAM"
-    },
-    {
-      imgSrc : "frame/이브이.png",
-      name : "이브이"
-    },
-    {
-      imgSrc : "frame/인생네컷 프레임 정키네컷.png",
-      name : "정키네컷"
-    },
-    {
-      imgSrc : "frame/치이카와 인생네컷2.png",
-      name : "치이카와2"
-    },
-    {
-      imgSrc : "frame/치이카와 인생네컷3.png",
-      name : "치이카와3"
-    },
-    {
-      imgSrc : "frame/치이카와 인생네컷4.png",
-      name : "치이카와4"
-    },
-    {
-      imgSrc : "frame/펭귄.png",
-      name : "치이카와5"
-    },
-    {
-      imgSrc : "frame/shinseong_comon.png",
-      name : "신성_컴온"
+// 이미지 필터 설정
+const imageFilters = {
+  brightness: 25,     // 밝기
+  contrast: -10,     // 대비
+  saturation: 10    // 채도
+};
+
+
+
+// 상태 변수
+const photoArr = [];
+const selectedPhotoArr = [];
+const maxCount = 5;
+let remainingCount = maxCount;
+const countdownDuration = 10;
+let countdownIntervalId;
+let countdownTime = countdownDuration;
+
+// RGB to HSL 변환
+function rgbToHsl(r, g, b) {
+  r /= 255;
+  g /= 255;
+  b /= 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h, s, l = (max + min) / 2;
+
+  if (max === min) {
+    h = s = 0;
+  } else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
     }
-  ];
-
-  const photoArr = []; // 촬영한 이미지 배열
-  const selectedPhotoArr = []; // 선택된 이미지 배열
-
-  const maxCount = 5; // 최대 촬영 횟수
-  let remainingCount = maxCount; // 현재 남은 촬영 횟수
-
-  const countdownDuration = 10; // 카운트다운 기간 (초)
-  let countdownIntervalId; // 카운트다운 인터벌 ID
-  let countdownTime = countdownDuration; // 현재 카운트다운 시간
-
-  // 남은 촬영 횟수 update
-  function updateRemainingCount() {
-    remainingCountElement.innerHTML = `남은 사진 촬영 횟수: ${remainingCount}회`;
+    h /= 6;
   }
 
-  // 10초 카운트 다운
-  function startCountdown() {
-    countdownTime = countdownDuration;
+  return { h, s, l };
+}
+
+// HSL to RGB 변환
+function hslToRgb(h, s, l) {
+  let r, g, b;
+
+  if (s === 0) {
+    r = g = b = l;
+  } else {
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1/6) return p + (q - p) * 6 * t;
+      if (t < 1/2) return q;
+      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      return p;
+    };
+
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1/3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1/3);
+  }
+
+  return {
+    r: Math.round(r * 255),
+    g: Math.round(g * 255),
+    b: Math.round(b * 255)
+  };
+}
+
+// processImage 함수를 CSS 필터 방식으로 수정
+function processImage(canvas) {
+  const ctx = canvas.getContext('2d');
+  
+  // 원본 이미지 저장
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = canvas.width;
+  tempCanvas.height = canvas.height;
+  const tempCtx = tempCanvas.getContext('2d');
+  tempCtx.scale(-1, 1);
+  tempCtx.drawImage(videoElement, -canvas.width, 0, canvas.width, canvas.height);
+  
+  // CSS 필터 적용
+  ctx.filter = `
+    brightness(${1 + imageFilters.brightness/100})
+    contrast(${1 + imageFilters.contrast/100})
+    saturate(${1 + imageFilters.saturation/100})
+  `;
+  
+  // 필터 적용된 이미지 그리기
+  ctx.scale(-1, 1);
+  ctx.drawImage(tempCanvas, -canvas.width, 0, canvas.width, canvas.height);
+}
+
+// 비디오 필터 함수는 동일하게 유지
+function applyVideoFilter() {
+  if (videoElement) {
+    const filterString = `
+      brightness(${1 + imageFilters.brightness/100})
+      contrast(${1 + imageFilters.contrast/100})
+      saturate(${1 + imageFilters.saturation/100})
+    `;
+    videoElement.style.filter = filterString;
+  }
+}
+
+
+// 카운트다운 시작
+function startCountdown() {
+  countdownTime = countdownDuration;
+  countdownTimer.textContent = countdownTime;
+
+  countdownIntervalId = setInterval(() => {
+    countdownTime--;
     countdownTimer.textContent = countdownTime;
-    playAudio();
 
-    countdownIntervalId = setInterval(() => {
-      countdownTime--;
-      countdownTimer.textContent = countdownTime;
-
-      if (countdownTime <= 0) {
-        clearInterval(countdownIntervalId);
-        capturePhoto();
-      }
-    }, 1000);
-  }
-
-  const audio = new Audio("voice/jammin-countdown.mp3");
-
-  function playAudio() {
-    if (audio.paused) {
-      audio.play();
-    } else {
-      audio.currentTime = 0; // 현재 위치를 처음으로 설정
-      audio.play();
-    }
-  }
-
-  function stopAudio() {
-    audio.pause();
-    audio.currentTime = 0; // 현재 위치를 처음으로 설정
-  }
-
-  // 사진 촬영
-  function capturePhoto() {
-    clearInterval(countdownIntervalId); // 카운트다운 중지
-
-    const canvas = document.createElement("canvas");
-    canvas.width = videoElement.width;
-    canvas.height = videoElement.height;
-    const context = canvas.getContext("2d");
-    context.scale(-1, 1); // 이미지 좌우 반전 처리
-    context.drawImage(
-      videoElement,
-      -canvas.width,
-      0,
-      canvas.width,
-      canvas.height
-    );
-
-    // 개별 이미지 다운로드
-    // const link = document.createElement("a");
-    // link.href = canvas.toDataURL();
-    // link.download = "captured_image.png";
-    // link.click();
-
-    // 촬영한 이미지를 배열에 추가
-    photoArr.push(canvas.toDataURL());
-
-    // 이미지를 목록에 표시
-    const listItem = document.createElement("li");
-    const image = document.createElement("img");
-    image.style.width = "240px";
-    image.style.height = "180px";
-    image.src = canvas.toDataURL();
-    listItem.appendChild(image);
-    photoList.appendChild(listItem);
-
-    // 남은 사진 촬영 횟수 갱신
-    remainingCount--;
-    updateRemainingCount();
-
-    // 사진 촬영 횟수가 남아있을 경우 카운트다운 재시작
-    if (remainingCount > 0) {
-      startCountdown();
-    } else {
-      captureButton.disabled = true; // 사진 촬영 버튼 비활성화
-      stopAudio();
-      choicePhoto();
-    }
-  }
-
-  const selectPhotoItems = Array.from(
-    selectPhotoList.querySelectorAll("li")
-  );
-
-  // selectedPhotoArr를 virtual frame에 넣기
-  function inputVirtualFrame() {
-    selectPhotoItems.forEach((item, index) => {
-      item.innerHTML = "";
-
-      const imageSrc = selectedPhotoArr[index];
-      if (imageSrc) {
-        const image = document.createElement("img");
-        image.src = imageSrc;
-        image.alt = `Selected Image ${index + 1}`;
-
-        item.appendChild(image);
-      }
-    });
-  }
-
-  // selectedPhotoArr를 frame에 넣기
-  function inputPhotoFrame() {
-    frameHoles.forEach((hole, index) => {
-      if (index >= selectedPhotoArr.length * 2) {
-        hole.innerHTML = "";
-
-        return false;
-      }
-
-      const imageSrc = selectedPhotoArr[index % selectedPhotoArr.length];
-      if (imageSrc) {
-        const image = document.createElement("img");
-        image.src = imageSrc;
-        image.alt = `Selected Image ${index + 1}`;
-        image.classList.add("selected-image");
-        hole.appendChild(image);
-      }
-    });
-  }
-
-  // 사진 몇개 골랐는지 체크 -> 버튼 활성화 관리
-  function checkSelectedPhoto() {
-    if (selectedPhotoArr.length !== 4) {
-      selectCompleteButtonEl.setAttribute("disabled", true);
-    } else {
-      selectCompleteButtonEl.removeAttribute("disabled");
-    }
-  }
-
-  const selectFrameSectionEl = document.getElementById(
-    "select-frame-section"
-  );
-
-  const frameImg1 = document.querySelector('#frame-img1');
-  const frameImg2 = document.querySelector('#frame-img2');
-
-  // 4장 다 고르면 프레임 고르는 섹션으로 넘어가기
-  function choiceFrame() {
-    // 화면 전환
-    photoChoiceSectionEl.classList.toggle("visibility-hidden");
-    photoOutputSectionEl.classList.toggle("visibility-hidden");
-
-    // 프레임 carousel item div 생성
-    frameArr.forEach((frame, index) => {
-      const divTag = document.createElement("div");
-      divTag.classList.add("select-frame-item");
-      divTag.id = `frameImg${index}`;
-      
-      divTag.addEventListener('click', () => {
-        frameImg1.src = frameArr[index].imgSrc;
-        frameImg2.src = frameArr[index].imgSrc;
-      })
-
-      // 로고 src가 없다면
-      if(!frameArr[index].logoSrc) {
-        const textTag = document.createElement('div');
-        textTag.classList.add('select-frame-item-name');
-        textTag.innerHTML = frameArr[index].name;
-        divTag.appendChild(textTag);
-      } else {
-        divTag.style.backgroundImage = `url('${frameArr[index].logoSrc}')`;
-        divTag.style.backgroundSize = 'contain';
-      }
-
-      selectFrameSectionEl.appendChild(divTag);
-    });
-  }
-
-  selectCompleteButtonEl.addEventListener("click", () => {
-    choiceFrame();
-  });
-
-  // 사진 고르기 기능
-  function choicePhoto() {
-    photoCaptureSectionEl.classList.toggle("visibility-hidden"); // 웹캠 가리기
-    photoChoiceSectionEl.classList.toggle("visibility-hidden"); // 사진 리스트 보여주기
-
-    const photoArrItems = Array.from(
-      photoList.querySelectorAll("#photoList > li")
-    );
-
-    // 고른 사진 배열에 넣기
-    for (let i = 0; i < photoArrItems.length; i++) {
-      const photoItem = photoArrItems[i];
-
-      photoItem.addEventListener("click", function () {
-        if (photoItem.classList.contains("selected")) {
-          photoItem.classList.remove("selected");
-          const imgSrc = photoItem.querySelector("img").src;
-          const index = selectedPhotoArr.indexOf(imgSrc);
-          if (index > -1) {
-            selectedPhotoArr.splice(index, 1);
-          }
-        } else {
-          if (selectedPhotoArr.length >= 4) {
-            return; // 최대 4개의 사진을 선택했다면 더이상 선택하지 못함
-          }
-          photoItem.classList.add("selected");
-          const imgSrc = photoItem.querySelector("img").src;
-          selectedPhotoArr.push(imgSrc);
-        }
-
-        checkSelectedPhoto();
-        inputPhotoFrame();
-        inputVirtualFrame();
-      });
-    }
-  }
-
-  // 완성된 사진 다운로드
-  function downloadImage() {
-    // HTML 요소를 캡처하여 캔버스에 그림
-    const element = document.getElementById("memorism-photo");
-    html2canvas(element, { scale: 2 }).then(function (canvas) {
-      // 캔버스를 이미지 데이터 URL로 변환합니다.
-      const image = canvas.toDataURL("image/png");
-
-      // 가상 링크를 생성하여 이미지 다운로드를 트리거
-      const link = document.createElement("a");
-      link.href = image;
-      link.download = "memorism.png";
-      link.click();
-    });
-  }
-
-  downloadButtonEl.addEventListener("click", downloadImage);
-
-  // 사진 촬영 시작
-  function initialize() {
-    descriptionSectionEl.classList.toggle("visibility-hidden");
-    photoCaptureSectionEl.classList.toggle("visibility-hidden");
-
-    remainingCount = maxCount;
-    updateRemainingCount();
-
-    if (remainingCount > 0) {
-      startCountdown();
-    } else {
-      captureButton.disabled = true; // 사진 촬영 버튼 비활성화
-    }
-  }
-
-  // OpenCV.js 로드 후 실행될 함수
-  function onOpenCvReady() {
-    navigator.mediaDevices
-      .getUserMedia({ video: true })
-      .then((stream) => {
-        videoElement.srcObject = stream;
-        videoElement.play();
-      })
-      .catch((error) => {
-        console.error("Error accessing webcam:", error);
-      });
-
-    captureButton.addEventListener("click", () => {
+    if (countdownTime <= 0) {
+      clearInterval(countdownIntervalId);
       capturePhoto();
-    });
+    }
+  }, 1000);
+}
+
+// 사진 촬영
+function capturePhoto() {
+  if (countdownIntervalId) {
+    clearInterval(countdownIntervalId);
   }
 
+  const canvas = document.createElement("canvas");
+  canvas.width = videoElement.width;
+  canvas.height = videoElement.height;
+  const context = canvas.getContext("2d");
+  
+  // 비디오 프레임 캡처
+  context.scale(-1, 1);
+  context.drawImage(videoElement, -canvas.width, 0, canvas.width, canvas.height);
+  
+  // 이미지 처리 적용
+  processImage(canvas);
+
+  // 이미지 저장 및 표시
+  const imageData = canvas.toDataURL();
+  photoArr.push(imageData);
+
+  const listItem = document.createElement("li");
+  const image = document.createElement("img");
+  image.style.width = "240px";
+  image.style.height = "180px";
+  image.src = imageData;
+  listItem.appendChild(image);
+  photoList.appendChild(listItem);
+
+  remainingCount--;
+  remainingCountElement.innerHTML = `남은 사진 촬영 횟수: ${remainingCount}회`;
+
+  if (remainingCount > 0) {
+    startCountdown();
+  } else {
+    if (captureButton) {
+      captureButton.disabled = true;
+    }
+    choicePhoto();
+  }
+}
+
+// 사진 선택 화면 표시
+function choicePhoto() {
+  photoCaptureSectionEl.classList.add("visibility-hidden");
+  photoChoiceSectionEl.classList.remove("visibility-hidden");
+
+  const photoItems = photoList.querySelectorAll("li");
+  photoItems.forEach((item) => {
+    item.addEventListener("click", function() {
+      if (this.classList.contains("selected")) {
+        this.classList.remove("selected");
+        const imgSrc = this.querySelector("img").src;
+        const index = selectedPhotoArr.indexOf(imgSrc);
+        if (index > -1) {
+          selectedPhotoArr.splice(index, 1);
+        }
+      } else {
+        if (selectedPhotoArr.length >= 4) return;
+        this.classList.add("selected");
+        const imgSrc = this.querySelector("img").src;
+        selectedPhotoArr.push(imgSrc);
+      }
+
+      checkSelectedPhoto();
+      inputPhotoFrame();
+      inputVirtualFrame();
+    });
+  });
+}
+
+// 선택된 사진 가상 프레임에 표시
+function inputVirtualFrame() {
+  const selectPhotoItems = Array.from(selectPhotoList.querySelectorAll("li"));
+  selectPhotoItems.forEach((item, index) => {
+    item.innerHTML = "";
+    const imageSrc = selectedPhotoArr[index];
+    if (imageSrc) {
+      const image = document.createElement("img");
+      image.src = imageSrc;
+      image.alt = `Selected Image ${index + 1}`;
+      item.appendChild(image);
+    }
+  });
+}
+
+// 선택된 사진 실제 프레임에 표시
+function inputPhotoFrame() {
+  frameHoles.forEach((hole, index) => {
+    hole.innerHTML = "";
+    const imageSrc = selectedPhotoArr[index % selectedPhotoArr.length];
+    if (imageSrc && index < selectedPhotoArr.length * 2) {
+      const image = document.createElement("img");
+      image.src = imageSrc;
+      image.alt = `Selected Image ${index + 1}`;
+      image.classList.add("selected-image");
+      hole.appendChild(image);
+    }
+  });
+}
+
+// 선택 완료 버튼 상태 관리
+function checkSelectedPhoto() {
+  if (selectedPhotoArr.length === 4) {
+    selectCompleteButtonEl.removeAttribute("disabled");
+  } else {
+    selectCompleteButtonEl.setAttribute("disabled", "true");
+  }
+}
+
+// 프레임 선택 화면 표시
+function choiceFrame() {
+  photoChoiceSectionEl.classList.add("visibility-hidden");
+  photoOutputSectionEl.classList.remove("visibility-hidden");
+
+  const selectFrameSectionEl = document.getElementById("select-frame-section");
+  const frameImg1 = document.getElementById('frame-img1');
+  const frameImg2 = document.getElementById('frame-img2');
+
+  frameArr.forEach((frame, index) => {
+    const divTag = document.createElement("div");
+    divTag.classList.add("select-frame-item");
+    divTag.id = `frameImg${index}`;
+    
+    divTag.addEventListener('click', () => {
+      frameImg1.src = frame.imgSrc;
+      frameImg2.src = frame.imgSrc;
+    });
+
+    const textTag = document.createElement('div');
+    textTag.classList.add('select-frame-item-name');
+    textTag.innerHTML = frame.name;
+    divTag.appendChild(textTag);
+
+    selectFrameSectionEl.appendChild(divTag);
+  });
+}
+
+// 최종 이미지 다운로드
+function downloadImage() {
+  const element = document.getElementById("memorism-photo");
+  html2canvas(element, { 
+    scale: 2,
+    backgroundColor: null,
+  }).then(function(canvas) {
+    const image = canvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.href = image;
+    link.download = "shinseong_memorism.png";
+    link.click();
+  });
+}
+
+// 초기화
+function initialize() {
+  descriptionSectionEl.classList.add("visibility-hidden");
+  photoCaptureSectionEl.classList.remove("visibility-hidden");
+
+  remainingCount = maxCount;
+  remainingCountElement.innerHTML = `남은 사진 촬영 횟수: ${remainingCount}회`;
+  applyVideoFilter();
+
+  navigator.mediaDevices
+    .getUserMedia({ video: true })
+    .then((stream) => {
+      videoElement.srcObject = stream;
+      videoElement.play();
+      startCountdown();
+    })
+    .catch((error) => {
+      console.error("Error accessing webcam:", error);
+    });
+}
+
+// 이벤트 리스너 설정
+function setupEventListeners() {
   startButtonEl.addEventListener("click", initialize);
+  selectCompleteButtonEl.addEventListener("click", choiceFrame);
+  downloadButtonEl.addEventListener("click", downloadImage);
+  if (captureButton) {
+    captureButton.addEventListener("click", capturePhoto);
+  }
+}
+
+// OpenCV 준비되면 실행
+function onOpenCvReady() {
+  console.log('OpenCV.js is ready');
+  setupEventListeners();
+}
+
+// 페이지 로드 시 이벤트 리스너 설정
+document.addEventListener('DOMContentLoaded', setupEventListeners);
