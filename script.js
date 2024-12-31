@@ -17,12 +17,16 @@ const frameHoles = document.querySelectorAll(".frame-hole");
 // 프레임 배열
 const frameArr = [
   {
-    imgSrc: "frame/졸업네컷1.png",
-    name: "졸업네컷1"
+    imgSrc: "frame/제70회 신성여고 졸업식 프레임v1.png",
+    name: "졸업네컷v1"
   },
   {
-    imgSrc: "frame/졸업네컷2.png",
-    name: "졸업네컷2"
+    imgSrc: "frame/제70회 신성여고 졸업식 프레임v2.png",
+    name: "졸업네컷v2"
+  },
+  {
+    imgSrc: "frame/제70회 신성여고 졸업식 프레임v3.png",
+    name: "졸업네컷v3"
   }
 ];
 
