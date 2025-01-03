@@ -301,9 +301,24 @@ function downloadImage() {
   const element = document.getElementById("memorism-photo");
   html2canvas(element, { 
     scale: 2,
-    backgroundColor: null,
+    backgroundColor: 'black'
   }).then(function(canvas) {
-    const image = canvas.toDataURL("image/png");
+    // 새 캔버스 생성
+    const finalCanvas = document.createElement('canvas');
+    const ctx = finalCanvas.getContext('2d');
+    
+    // 최종 크기는 640px × 1840px (20px 여백 포함)
+    finalCanvas.width = 1240;     // 600 + (20px × 2)
+    finalCanvas.height = 1840;   // 1800 + (20px × 2)
+    
+    // 검은색 배경
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+    
+    // scale: 2가 적용된 이미지를 20px 여백을 두고 그리기
+    ctx.drawImage(canvas, 20, 20);
+    
+    const image = finalCanvas.toDataURL("image/png", 1.0);
     const link = document.createElement("a");
     link.href = image;
     link.download = "shinseong_memorism.png";
